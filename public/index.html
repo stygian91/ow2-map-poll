@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://imgur.com">
+    <title>OW 2 Map Poll</title>
+  </head>
+  <body>
+  
+    <script>
+    (function () {
+      const base_url = 'http://localhost/';
+
+      const imgs = [
+        { id: 1, name: 'Aatlis', img: 'https://i.imgur.com/sultLaX.png' },
+        { id: 2, name: 'Antarctic Peninsula', img: 'https://i.imgur.com/TdtdNJw.png' },
+        { id: 3, name: 'Blizzard World', img: 'https://i.imgur.com/wKTCYog.jpeg' },
+        { id: 4, name: 'Colosseo', img: 'https://i.imgur.com/2KVR5Cq.png' },
+        { id: 5, name: 'Dorado', img: 'https://i.imgur.com/6ZAbKwc.jpeg' },
+        { id: 6, name: 'Eichenwalde', img: 'https://i.imgur.com/nXCSoJM.png' },
+        { id: 7, name: 'Esperanca', img: 'https://i.imgur.com/Qk0NzLB.jpeg' },
+        { id: 8, name: 'Gibraltar', img: 'https://i.imgur.com/BGjpOwY.jpeg' },
+        { id: 9, name: 'Hanaoka', img: 'https://i.imgur.com/Wjvth7f.jpeg' },
+        { id: 10, name: 'Havana', img: 'https://i.imgur.com/dEHLrLb.png' },
+        { id: 11, name: 'Hollywood', img: 'https://i.imgur.com/ZknfTIx.jpeg' },
+        { id: 12, name: 'Illios', img: 'https://i.imgur.com/n2hmjVN.jpeg' },
+        { id: 13, name: 'Junkertown', img: 'https://i.imgur.com/QIh2FTi.jpeg' },
+        { id: 14, name: 'Kingsrow', img: 'https://i.imgur.com/TwI0ib4.jpeg' },
+        { id: 15, name: 'Lijiang', img: 'https://i.imgur.com/lNnJQ1J.jpeg' },
+        { id: 16, name: 'Midtown', img: 'https://i.imgur.com/oLYNbyJ.png' },
+        { id: 17, name: 'Circuit royal', img: 'https://i.imgur.com/qnXi5Yu.jpeg' },
+        { id: 18, name: 'Nepal', img: 'https://i.imgur.com/snqT4ai.jpeg' },
+        { id: 19, name: 'New junk city', img: 'https://i.imgur.com/XA129fo.jpeg' },
+        { id: 20, name: 'Numbani', img: 'https://i.imgur.com/KrpMJyO.jpeg' },
+        { id: 21, name: 'Oasis', img: 'https://i.imgur.com/08Y5sid.jpeg' },
+        { id: 22, name: 'Busan', img: 'https://i.imgur.com/hICRScm.jpeg' },
+        { id: 23, name: 'Paraiso', img: 'https://i.imgur.com/sIDwypu.jpeg' },
+        { id: 24, name: 'Rialto', img: 'https://i.imgur.com/QrCMsoy.jpeg' },
+        { id: 25, name: 'Route66', img: 'https://i.imgur.com/LwYJoEu.jpeg' },
+        { id: 26, name: 'Runasapi', img: 'https://i.imgur.com/tYsY0us.jpeg' },
+        { id: 27, name: 'Samoa', img: 'https://i.imgur.com/ocVnO3E.jpeg' },
+        { id: 28, name: 'Shambali monastery', img: 'https://i.imgur.com/wNqGeMI.png' },
+        { id: 29, name: 'Suravasa', img: 'https://i.imgur.com/wCM84G9.jpeg' },
+        { id: 30, name: 'Throne of anubis', img: 'https://i.imgur.com/7JKK8Wg.png' },
+        { id: 31, name: 'New queen street', img: 'https://i.imgur.com/C2dov5K.jpeg' },
+      ];
+
+      async function api_get_me() {
+        const response = await fetch(`${base_url}api/me`);
+        const responseJson = await response.json();
+        console.log(responseJson);
+      }
+
+      api_get_me();
+    })();
+    </script>
+  </body>
+</html>
