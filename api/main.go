@@ -28,7 +28,7 @@ func getClientHash(r *http.Request) (hash string, err error) {
 	return
 }
 
-// TODO: 
+// TODO: check if user should be throttled
 func me(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
@@ -40,21 +40,21 @@ func me(w http.ResponseWriter, r *http.Request) {
 
 	client_hash, err := getClientHash(r)
 	if err != nil {
-		err = fmt.Errorf("getClientHash: %v", err)
+		err = fmt.Errorf("getClientHash: %w", err)
 		returnError(err)
 		return
 	}
 
 	user, user_err := db.GetOrCreateUser(client_hash)
 	if user_err != nil {
-		user_err = fmt.Errorf("GetOrCreateUser: %v", user_err)
+		user_err = fmt.Errorf("GetOrCreateUser: %w", user_err)
 		returnError(user_err)
 		return
 	}
 
 	poll, poll_err := db.GetOrCreateUserPoll(&user)
 	if poll_err != nil {
-		poll_err = fmt.Errorf("GetOrCreateUserPoll: %v", poll_err)
+		poll_err = fmt.Errorf("GetOrCreateUserPoll: %w", poll_err)
 		returnError(poll_err)
 		return
 	}

@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -92,11 +93,11 @@ func getUser(hash string) (User, error) {
 
 func GetOrCreateUser(hash string) (User, error) {
 	user, get_err := getUser(hash)
-	if get_err != nil && get_err != sql.ErrNoRows {
+	if get_err != nil && !errors.Is(get_err, sql.ErrNoRows) {
 		return user, get_err
 	}
 
-	if get_err == sql.ErrNoRows {
+	if errors.Is(get_err, sql.ErrNoRows) {
 		create_err := createUser(hash)
 		if create_err != nil {
 			return user, create_err
@@ -149,11 +150,11 @@ func createPoll(user *User, maps [3]Map) error {
 
 func GetOrCreateUserPoll(user *User) (Poll, error) {
 	poll, get_err := getPoll(user)
-	if get_err != nil && get_err != sql.ErrNoRows {
+	if get_err != nil && !errors.Is(get_err, sql.ErrNoRows) {
 		return poll, get_err
 	}
 
-	if get_err == sql.ErrNoRows {
+	if errors.Is(get_err, sql.ErrNoRows) {
 		maps, get_maps_err := get3RandomMaps()
 		if get_maps_err != nil {
 			return poll, get_maps_err
