@@ -1,4 +1,4 @@
-module github.com/itsstyg/ow2-map-poll
+module github.com/stygian91/ow2-map-poll
 
 go 1.25.1
 

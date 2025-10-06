@@ -29,13 +29,16 @@ type Map struct {
 	Name string
 }
 
+const DATE_FORMAT = "2006-01-02 15:04:05"
+
 var (
-	instance           *sql.DB
-	get_user_stmt      *sql.Stmt
-	create_user_stmt   *sql.Stmt
-	get_user_poll_stmt *sql.Stmt
-	get_rand_maps_stmt *sql.Stmt
-	create_poll_stmt   *sql.Stmt
+	instance            *sql.DB
+	get_user_stmt       *sql.Stmt
+	create_user_stmt    *sql.Stmt
+	get_user_poll_stmt  *sql.Stmt
+	get_rand_maps_stmt  *sql.Stmt
+	create_poll_stmt    *sql.Stmt
+	get_poll_count_stmt *sql.Stmt
 )
 
 func Open() error {
@@ -70,6 +73,11 @@ func Open() error {
 		return err
 	}
 
+	get_poll_count_stmt, err = instance.Prepare("select count(*) as cnt from polls where user_id = ? and created_at >= ? and vote is not null and vote != 0")
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
@@ -80,7 +88,7 @@ func Close() {
 }
 
 func createUser(hash string) error {
-	_, err := create_user_stmt.Exec(hash, time.Now().Format("2006-01-02 15:04:05"))
+	_, err := create_user_stmt.Exec(hash, time.Now().Format(DATE_FORMAT))
 	return err
 }
 
@@ -144,7 +152,7 @@ func get3RandomMaps() ([3]Map, error) {
 }
 
 func createPoll(user *User, maps [3]Map) error {
-	_, err := create_poll_stmt.Exec(user.Id, maps[0].Id, maps[1].Id, maps[2].Id, time.Now().Format("2006-01-02 15:04:05"))
+	_, err := create_poll_stmt.Exec(user.Id, maps[0].Id, maps[1].Id, maps[2].Id, time.Now().Format(DATE_FORMAT))
 	return err
 }
 
@@ -168,4 +176,11 @@ func GetOrCreateUserPoll(user *User) (Poll, error) {
 	}
 
 	return poll, nil
+}
+
+func GetPollCountForToday(user *User) (cnt int, err error) {
+	yesterday := time.Now().Add(-time.Hour * 24).Format(DATE_FORMAT)
+	res := get_poll_count_stmt.QueryRow(user.Id, yesterday)
+	err = res.Scan(&cnt)
+	return
 }

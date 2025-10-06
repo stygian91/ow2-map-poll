@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/itsstyg/ow2-map-poll/db"
+	"github.com/stygian91/ow2-map-poll/db"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+const MAX_POLLS_PER_DAY = 20
 
 func root(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello there")
@@ -28,50 +30,86 @@ func getClientHash(r *http.Request) (hash string, err error) {
 	return
 }
 
+func returnError(w http.ResponseWriter, err error) {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(os.Stderr, "err: %s\n", err)
+		fmt.Fprintf(w, `{"status": "error", "message": "Internal error."}`)
+}
+
 // TODO: check if user should be throttled
 func me(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	returnError := func(err error) {
-		w.WriteHeader(500)
-		fmt.Fprintf(os.Stderr, "err: %s\n", err)
-		fmt.Fprintf(w, `{"status": "error", "message": "Internal error."}`)
-	}
-
 	client_hash, err := getClientHash(r)
 	if err != nil {
-		err = fmt.Errorf("getClientHash: %w", err)
-		returnError(err)
+		returnError(w, fmt.Errorf("getClientHash: %w", err))
 		return
 	}
 
 	user, user_err := db.GetOrCreateUser(client_hash)
 	if user_err != nil {
-		user_err = fmt.Errorf("GetOrCreateUser: %w", user_err)
-		returnError(user_err)
+		returnError(w, fmt.Errorf("GetOrCreateUser: %w", user_err))
+		return
+	}
+
+	poll_count, cnt_err := db.GetPollCountForToday(&user)
+	if cnt_err != nil {
+		returnError(w, fmt.Errorf("GetPollCountForToday: %w", cnt_err))
+		return
+	}
+
+	if poll_count >= MAX_POLLS_PER_DAY {
+		w.WriteHeader(http.StatusTooManyRequests)
+		fmt.Fprintf(w, `{"status": "error", "message": "Too many requests"}`)
 		return
 	}
 
 	poll, poll_err := db.GetOrCreateUserPoll(&user)
 	if poll_err != nil {
-		poll_err = fmt.Errorf("GetOrCreateUserPoll: %w", poll_err)
-		returnError(poll_err)
-		return
-	}
-
-	user_json, user_json_err := json.Marshal(user)
-	if user_json_err != nil {
-		returnError(user_json_err)
+		returnError(w, fmt.Errorf("GetOrCreateUserPoll: %w", poll_err))
 		return
 	}
 
 	poll_json, poll_json_err := json.Marshal(poll)
 	if poll_json_err != nil {
-		returnError(poll_json_err)
+		returnError(w, poll_json_err)
 		return
 	}
 
-	fmt.Fprintf(w, `{"user": %s, "poll": %s}`, string(user_json), string(poll_json))
+	fmt.Fprintf(w, `{"poll": %s}`, string(poll_json))
+}
+
+func vote(w http.ResponseWriter, r *http.Request) {
+	client_hash, err := getClientHash(r)
+	if err != nil {
+		returnError(w, fmt.Errorf("getClientHash: %w", err))
+		return
+	}
+
+	user, user_err := db.GetOrCreateUser(client_hash)
+	if user_err != nil {
+		returnError(w, fmt.Errorf("GetOrCreateUser: %w", user_err))
+		return
+	}
+
+	poll_count, cnt_err := db.GetPollCountForToday(&user)
+	if cnt_err != nil {
+		returnError(w, fmt.Errorf("GetPollCountForToday: %w", cnt_err))
+		return
+	}
+
+	if poll_count >= MAX_POLLS_PER_DAY {
+		w.WriteHeader(http.StatusTooManyRequests)
+		fmt.Fprintf(w, `{"status": "error", "message": "Too many requests"}`)
+		return
+	}
+
+	// TODO:
+	// 1. Get current user poll and validate with req.poll_id
+	// 2. Validate that the req.vote is valid for the current poll
+	// 3. Update the poll vote in DB
+
+	fmt.Fprintf(w, `{"success": true}`)
 }
 
 func main() {

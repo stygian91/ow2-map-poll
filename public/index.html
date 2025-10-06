@@ -1,59 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="preconnect" href="https://imgur.com">
-    <title>OW 2 Map Poll</title>
-  </head>
-  <body>
-  
-    <script>
-    (function () {
-      const base_url = 'http://localhost/';
 
-      const imgs = [
-        { id: 1, name: 'Aatlis', img: 'https://i.imgur.com/sultLaX.png' },
-        { id: 2, name: 'Antarctic Peninsula', img: 'https://i.imgur.com/TdtdNJw.png' },
-        { id: 3, name: 'Blizzard World', img: 'https://i.imgur.com/wKTCYog.jpeg' },
-        { id: 4, name: 'Colosseo', img: 'https://i.imgur.com/2KVR5Cq.png' },
-        { id: 5, name: 'Dorado', img: 'https://i.imgur.com/6ZAbKwc.jpeg' },
-        { id: 6, name: 'Eichenwalde', img: 'https://i.imgur.com/nXCSoJM.png' },
-        { id: 7, name: 'Esperanca', img: 'https://i.imgur.com/Qk0NzLB.jpeg' },
-        { id: 8, name: 'Gibraltar', img: 'https://i.imgur.com/BGjpOwY.jpeg' },
-        { id: 9, name: 'Hanaoka', img: 'https://i.imgur.com/Wjvth7f.jpeg' },
-        { id: 10, name: 'Havana', img: 'https://i.imgur.com/dEHLrLb.png' },
-        { id: 11, name: 'Hollywood', img: 'https://i.imgur.com/ZknfTIx.jpeg' },
-        { id: 12, name: 'Illios', img: 'https://i.imgur.com/n2hmjVN.jpeg' },
-        { id: 13, name: 'Junkertown', img: 'https://i.imgur.com/QIh2FTi.jpeg' },
-        { id: 14, name: 'Kingsrow', img: 'https://i.imgur.com/TwI0ib4.jpeg' },
-        { id: 15, name: 'Lijiang', img: 'https://i.imgur.com/lNnJQ1J.jpeg' },
-        { id: 16, name: 'Midtown', img: 'https://i.imgur.com/oLYNbyJ.png' },
-        { id: 17, name: 'Circuit royal', img: 'https://i.imgur.com/qnXi5Yu.jpeg' },
-        { id: 18, name: 'Nepal', img: 'https://i.imgur.com/snqT4ai.jpeg' },
-        { id: 19, name: 'New junk city', img: 'https://i.imgur.com/XA129fo.jpeg' },
-        { id: 20, name: 'Numbani', img: 'https://i.imgur.com/KrpMJyO.jpeg' },
-        { id: 21, name: 'Oasis', img: 'https://i.imgur.com/08Y5sid.jpeg' },
-        { id: 22, name: 'Busan', img: 'https://i.imgur.com/hICRScm.jpeg' },
-        { id: 23, name: 'Paraiso', img: 'https://i.imgur.com/sIDwypu.jpeg' },
-        { id: 24, name: 'Rialto', img: 'https://i.imgur.com/QrCMsoy.jpeg' },
-        { id: 25, name: 'Route66', img: 'https://i.imgur.com/LwYJoEu.jpeg' },
-        { id: 26, name: 'Runasapi', img: 'https://i.imgur.com/tYsY0us.jpeg' },
-        { id: 27, name: 'Samoa', img: 'https://i.imgur.com/ocVnO3E.jpeg' },
-        { id: 28, name: 'Shambali monastery', img: 'https://i.imgur.com/wNqGeMI.png' },
-        { id: 29, name: 'Suravasa', img: 'https://i.imgur.com/wCM84G9.jpeg' },
-        { id: 30, name: 'Throne of anubis', img: 'https://i.imgur.com/7JKK8Wg.png' },
-        { id: 31, name: 'New queen street', img: 'https://i.imgur.com/C2dov5K.jpeg' },
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://imgur.com">
+  <title>OW 2 Map Poll</title>
+</head>
+
+<body>
+  <div class="main">
+    <div class="loading">Loading...</div>
+  </div>
+
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .map-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .map-option {
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .map-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+    }
+
+    .map-option img {
+      width: 200px;
+      height: auto;
+      border: 3px solid transparent;
+      border-radius: 8px;
+      transition: border 0.2s ease;
+    }
+
+    .map-option input[type="radio"]:checked+img {
+      border-color: #00bfff;
+    }
+
+    .map-option:hover {
+      transform: scale(1.03);
+    }
+
+    button[type="submit"] {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+
+  <script>
+    (async function () {
+      const base_url = 'http://localhost/';
+      const $main = document.querySelector('.main');
+      const default_error = 'There was an error while loading data from the API.';
+
+      const maps = [
+        {id: 1, name: 'Aatlis', img: 'https://i.imgur.com/sultLaX.png'},
+        {id: 2, name: 'Antarctic Peninsula', img: 'https://i.imgur.com/TdtdNJw.png'},
+        {id: 3, name: 'Blizzard World', img: 'https://i.imgur.com/wKTCYog.jpeg'},
+        {id: 4, name: 'Colosseo', img: 'https://i.imgur.com/2KVR5Cq.png'},
+        {id: 5, name: 'Dorado', img: 'https://i.imgur.com/6ZAbKwc.jpeg'},
+        {id: 6, name: 'Eichenwalde', img: 'https://i.imgur.com/nXCSoJM.png'},
+        {id: 7, name: 'Esperanca', img: 'https://i.imgur.com/Qk0NzLB.jpeg'},
+        {id: 8, name: 'Gibraltar', img: 'https://i.imgur.com/BGjpOwY.jpeg'},
+        {id: 9, name: 'Hanaoka', img: 'https://i.imgur.com/Wjvth7f.jpeg'},
+        {id: 10, name: 'Havana', img: 'https://i.imgur.com/dEHLrLb.png'},
+        {id: 11, name: 'Hollywood', img: 'https://i.imgur.com/ZknfTIx.jpeg'},
+        {id: 12, name: 'Illios', img: 'https://i.imgur.com/n2hmjVN.jpeg'},
+        {id: 13, name: 'Junkertown', img: 'https://i.imgur.com/QIh2FTi.jpeg'},
+        {id: 14, name: 'Kingsrow', img: 'https://i.imgur.com/TwI0ib4.jpeg'},
+        {id: 15, name: 'Lijiang', img: 'https://i.imgur.com/lNnJQ1J.jpeg'},
+        {id: 16, name: 'Midtown', img: 'https://i.imgur.com/oLYNbyJ.png'},
+        {id: 17, name: 'Circuit royal', img: 'https://i.imgur.com/qnXi5Yu.jpeg'},
+        {id: 18, name: 'Nepal', img: 'https://i.imgur.com/snqT4ai.jpeg'},
+        {id: 19, name: 'New junk city', img: 'https://i.imgur.com/XA129fo.jpeg'},
+        {id: 20, name: 'Numbani', img: 'https://i.imgur.com/KrpMJyO.jpeg'},
+        {id: 21, name: 'Oasis', img: 'https://i.imgur.com/08Y5sid.jpeg'},
+        {id: 22, name: 'Busan', img: 'https://i.imgur.com/hICRScm.jpeg'},
+        {id: 23, name: 'Paraiso', img: 'https://i.imgur.com/sIDwypu.jpeg'},
+        {id: 24, name: 'Rialto', img: 'https://i.imgur.com/QrCMsoy.jpeg'},
+        {id: 25, name: 'Route66', img: 'https://i.imgur.com/LwYJoEu.jpeg'},
+        {id: 26, name: 'Runasapi', img: 'https://i.imgur.com/tYsY0us.jpeg'},
+        {id: 27, name: 'Samoa', img: 'https://i.imgur.com/ocVnO3E.jpeg'},
+        {id: 28, name: 'Shambali monastery', img: 'https://i.imgur.com/wNqGeMI.png'},
+        {id: 29, name: 'Suravasa', img: 'https://i.imgur.com/wCM84G9.jpeg'},
+        {id: 30, name: 'Throne of anubis', img: 'https://i.imgur.com/7JKK8Wg.png'},
+        {id: 31, name: 'New queen street', img: 'https://i.imgur.com/C2dov5K.jpeg'},
       ];
+
+      function show_error(error) {
+        const $error = document.createElement('div');
+        $error.classList.add('error');
+        $error.innerText = error;
+        $main.innerText = '';
+        $main.appendChild($error);
+      }
 
       async function api_get_me() {
         const response = await fetch(`${base_url}api/me`);
-        const responseJson = await response.json();
-        console.log(responseJson);
+        let response_json;
+        try {
+          response_json = await response.json();
+        } catch (err) {
+          response_json = null;
+        }
+
+        return {
+          status: response.status,
+          data: response_json,
+        };
       }
 
-      api_get_me();
+      async function on_form_submit(event) {
+        event.preventDefault();
+
+        const form_data = new FormData(event.target);
+        const response = await fetch(`${base_url}api/vote`, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          body: form_data,
+        });
+
+        const responseJson = await response.json();
+      }
+
+      function show_maps(me) {
+        const poll_map_ids = [me?.poll?.Map1Id, me?.poll?.Map2Id, me?.poll?.Map3Id];
+        const vote_maps = maps.filter(map => poll_map_ids.includes(map.id));
+
+        const $form = document.createElement('form');
+        $form.classList.add('map-form');
+        
+        const $poll = document.createElement('input');
+        $poll.type = 'hidden';
+        $poll.name = 'poll_id';
+        $poll.value = me?.poll?.PollId;
+        $form.appendChild($poll);
+
+        vote_maps.forEach((map, index) => {
+          const $label = document.createElement('label');
+          $label.classList.add('map-option');
+
+          const $input = document.createElement('input');
+          $input.type = 'radio';
+          $input.name = 'map';
+          $input.value = map.id;
+          $input.required = true;
+
+          const $img = document.createElement('img');
+          $img.src = map.img;
+          $img.alt = map.name;
+          $img.title = map.name;
+
+          $label.appendChild($input);
+          $label.appendChild($img);
+          $form.appendChild($label);
+        });
+
+        const $submit = document.createElement('button');
+        $submit.type = 'submit';
+        $submit.innerText = 'Vote';
+        $form.appendChild($submit);
+        $form.addEventListener('submit', on_form_submit);
+
+        $main.innerText = '';
+        $main.appendChild($form);
+      }
+
+      async function main() {
+        const {status, data: me} = await api_get_me();
+
+        switch (status) {
+          case 200:
+            show_maps(me);
+            break;
+
+          case 429:
+            show_error("You've reached the daily vote limit.");
+            break;
+
+          default:
+            show_error(default_error);
+            break;
+        }
+      }
+
+      try {
+        main();
+      } catch (error) {
+        console.error(error);
+        show_error(default_error);
+      }
     })();
-    </script>
-  </body>
+  </script>
+</body>
+
 </html>
