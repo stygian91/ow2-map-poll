@@ -37,12 +37,13 @@ var (
 )
 
 var statement_queries map[string]string = map[string]string{
-	"get_user":       "select id, hash, created_at from users where hash = ? limit 1",
-	"create_user":    "insert into users(hash, created_at) values (?, ?)",
-	"get_user_poll":  "select id, created_at, user_id, map1_id, map2_id, map3_id, vote from polls where user_id = ? and (vote is null or vote = 0) order by id desc limit 1",
-	"get_rand_maps":  "select id, name from maps order by random() limit 3",
-	"create_poll":    "insert into polls(user_id, map1_id, map2_id, map3_id, created_at, vote) values (?, ?, ?, ?, ?, 0)",
-	"get_poll_count": "select count(*) as cnt from polls where user_id = ? and created_at >= ? and vote is not null and vote != 0",
+	"get_user":         "select id, hash, created_at from users where hash = ? limit 1",
+	"create_user":      "insert into users(hash, created_at) values (?, ?)",
+	"get_user_poll":    "select id, created_at, user_id, map1_id, map2_id, map3_id, vote from polls where user_id = ? and (vote is null or vote = 0) order by id desc limit 1",
+	"get_rand_maps":    "select id, name from maps order by random() limit 3",
+	"create_poll":      "insert into polls(user_id, map1_id, map2_id, map3_id, created_at, vote) values (?, ?, ?, ?, ?, 0)",
+	"get_poll_count":   "select count(*) as cnt from polls where user_id = ? and created_at >= ? and vote is not null and vote != 0",
+	"update_poll_vote": "update polls set vote = ? where id = ?",
 }
 
 func Open() error {
@@ -103,7 +104,7 @@ func GetOrCreateUser(hash string) (User, error) {
 	return user, nil
 }
 
-func getPoll(user *User) (Poll, error) {
+func GetPoll(user *User) (Poll, error) {
 	poll := Poll{}
 	get_res := cached_statements["get_user_poll"].QueryRow(user.Id)
 	scan_err := get_res.Scan(
@@ -143,7 +144,7 @@ func createPoll(user *User, maps [3]Map) error {
 }
 
 func GetOrCreateUserPoll(user *User) (Poll, error) {
-	poll, get_err := getPoll(user)
+	poll, get_err := GetPoll(user)
 	if get_err != nil && !errors.Is(get_err, sql.ErrNoRows) {
 		return poll, get_err
 	}
@@ -158,7 +159,7 @@ func GetOrCreateUserPoll(user *User) (Poll, error) {
 			return poll, create_err
 		}
 
-		return getPoll(user)
+		return GetPoll(user)
 	}
 
 	return poll, nil
@@ -169,4 +170,9 @@ func GetPollCountForToday(user *User) (cnt int, err error) {
 	res := cached_statements["get_poll_count"].QueryRow(user.Id, yesterday)
 	err = res.Scan(&cnt)
 	return
+}
+
+func UpdatePollVote(poll *Poll, vote int) error {
+	_, err := cached_statements["update_poll_vote"].Exec(vote, poll.Id)
+	return err
 }

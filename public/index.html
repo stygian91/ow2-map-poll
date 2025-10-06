@@ -133,12 +133,15 @@
       async function on_form_submit(event) {
         event.preventDefault();
 
-        const form_data = new FormData(event.target);
+        const $radio = event.target.querySelector('input[name="vote"]:checked');
+        const $poll_id = event.target.querySelector('input[name="poll_id"]');
+        const body = `vote=${encodeURIComponent($radio.value)}&poll_id=${encodeURIComponent($poll_id.value)}`;
         const response = await fetch(`${base_url}api/vote`, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/x-www-form-urlencoded',
           },
-          body: form_data,
+          method: 'post',
+          body,
         });
 
         const responseJson = await response.json();
@@ -154,7 +157,7 @@
         const $poll = document.createElement('input');
         $poll.type = 'hidden';
         $poll.name = 'poll_id';
-        $poll.value = me?.poll?.PollId;
+        $poll.value = me?.poll?.Id;
         $form.appendChild($poll);
 
         vote_maps.forEach((map, index) => {
@@ -163,7 +166,7 @@
 
           const $input = document.createElement('input');
           $input.type = 'radio';
-          $input.name = 'map';
+          $input.name = 'vote';
           $input.value = map.id;
           $input.required = true;
 
