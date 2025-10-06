@@ -36,8 +36,14 @@
       flex-wrap: wrap;
       gap: 16px;
       justify-content: center;
-      align-items: center;
+      align-items: flex-end;
       margin-top: 20px;
+    }
+
+    @media only screen and (max-width: 1023px) {
+      .map-form {
+        flex-direction: column;
+      }
     }
 
     .map-option {
@@ -57,11 +63,16 @@
     }
 
     .map-option img {
-      width: 200px;
+      max-width: 300px;
       height: auto;
       border: 3px solid transparent;
       border-radius: 8px;
       transition: border 0.2s ease;
+    }
+
+    .map-option div {
+      text-align: center;
+      font-size: 18px;
     }
 
     .map-option input[type="radio"]:checked+img {
@@ -73,6 +84,7 @@
     }
 
     button[type="submit"] {
+      align-self: center;
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
@@ -101,12 +113,12 @@
         {id: 11, name: 'Hollywood', img: 'https://i.imgur.com/ZknfTIx.jpeg'},
         {id: 12, name: 'Illios', img: 'https://i.imgur.com/n2hmjVN.jpeg'},
         {id: 13, name: 'Junkertown', img: 'https://i.imgur.com/QIh2FTi.jpeg'},
-        {id: 14, name: 'Kingsrow', img: 'https://i.imgur.com/TwI0ib4.jpeg'},
+        {id: 14, name: "King's Row", img: 'https://i.imgur.com/TwI0ib4.jpeg'},
         {id: 15, name: 'Lijiang', img: 'https://i.imgur.com/lNnJQ1J.jpeg'},
         {id: 16, name: 'Midtown', img: 'https://i.imgur.com/oLYNbyJ.png'},
-        {id: 17, name: 'Circuit royal', img: 'https://i.imgur.com/qnXi5Yu.jpeg'},
+        {id: 17, name: 'Circuit Royal', img: 'https://i.imgur.com/qnXi5Yu.jpeg'},
         {id: 18, name: 'Nepal', img: 'https://i.imgur.com/snqT4ai.jpeg'},
-        {id: 19, name: 'New junk city', img: 'https://i.imgur.com/XA129fo.jpeg'},
+        {id: 19, name: 'New Junk City', img: 'https://i.imgur.com/XA129fo.jpeg'},
         {id: 20, name: 'Numbani', img: 'https://i.imgur.com/KrpMJyO.jpeg'},
         {id: 21, name: 'Oasis', img: 'https://i.imgur.com/08Y5sid.jpeg'},
         {id: 22, name: 'Busan', img: 'https://i.imgur.com/hICRScm.jpeg'},
@@ -115,10 +127,10 @@
         {id: 25, name: 'Route66', img: 'https://i.imgur.com/LwYJoEu.jpeg'},
         {id: 26, name: 'Runasapi', img: 'https://i.imgur.com/tYsY0us.jpeg'},
         {id: 27, name: 'Samoa', img: 'https://i.imgur.com/ocVnO3E.jpeg'},
-        {id: 28, name: 'Shambali monastery', img: 'https://i.imgur.com/wNqGeMI.png'},
+        {id: 28, name: 'Shambali Monastery', img: 'https://i.imgur.com/wNqGeMI.png'},
         {id: 29, name: 'Suravasa', img: 'https://i.imgur.com/wCM84G9.jpeg'},
-        {id: 30, name: 'Throne of anubis', img: 'https://i.imgur.com/7JKK8Wg.png'},
-        {id: 31, name: 'New queen street', img: 'https://i.imgur.com/C2dov5K.jpeg'},
+        {id: 30, name: 'Throne of Anubis', img: 'https://i.imgur.com/7JKK8Wg.png'},
+        {id: 31, name: 'New Queen Street', img: 'https://i.imgur.com/C2dov5K.jpeg'},
       ];
 
       function show_error(error) {
@@ -229,8 +241,12 @@
           $img.alt = map.name;
           $img.title = map.name;
 
+          const $div = document.createElement('div');
+          $div.innerText = map.name;
+
           $label.appendChild($input);
           $label.appendChild($img);
+          $label.appendChild($div);
           $form.appendChild($label);
         });
 
