@@ -144,39 +144,61 @@
         };
       }
 
+      let loading = false;
       async function on_form_submit(event) {
         event.preventDefault();
+
+        if (loading) {
+          return;
+        }
+
+        loading = true;
+        show_loading();
 
         const $radio = event.target.querySelector('input[name="vote"]:checked');
         const $poll_id = event.target.querySelector('input[name="poll_id"]');
         const body = `vote=${encodeURIComponent($radio.value)}&poll_id=${encodeURIComponent($poll_id.value)}`;
-        const response = await fetch(`${base_url}api/vote`, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          method: 'post',
-          body,
-        });
+        try {
+          const response = await fetch(`${base_url}api/vote`, {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            method: 'post',
+            body,
+          });
 
-        const responseJson = await response.json();
+          const responseJson = await response.json();
 
-        switch (response.status) {
-          case 200:
-            window.location.reload();
-          break;
+          switch (response.status) {
+            case 200:
+              window.location.reload();
+              break;
 
-          case 429:
-            show_error(limit_error);
-          break;
+            case 429:
+              show_error(limit_error);
+              break;
 
-          default:
-            let err = default_error;
-            if (response?.message?.length) {
-              err = response.message;
-            }
-            show_error(err);
-          break;
+            default:
+              let err = default_error;
+              if (response?.message?.length) {
+                err = response.message;
+              }
+              show_error(err);
+              break;
+          }
+        } catch (err) {
+          show_error(default_error);
+        } finally {
+          loading = false;
         }
+      }
+
+      function show_loading() {
+        $main.innerText = '';
+        const $loading = document.createElement('div');
+        $loading.classList.add('loading');
+        $loading.innerText = 'Loading...';
+        $main.appendChild($loading);
       }
 
       function show_maps(me) {
@@ -185,7 +207,7 @@
 
         const $form = document.createElement('form');
         $form.classList.add('map-form');
-        
+
         const $poll = document.createElement('input');
         $poll.type = 'hidden';
         $poll.name = 'poll_id';
