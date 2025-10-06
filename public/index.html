@@ -9,6 +9,7 @@
 </head>
 
 <body>
+  <!-- TODO: add top menu -->
   <div class="main">
     <div class="loading">Loading...</div>
   </div>
@@ -17,6 +18,17 @@
     body {
       background-color: #000;
       color: #fff;
+    }
+
+    .main {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .main .loading {
+      margin-top: 1em;
+      font-size: 24px;
     }
 
     .map-form {
@@ -69,6 +81,7 @@
 
   <script>
     (async function () {
+      // TODO: change base url
       const base_url = 'http://localhost/';
       const $main = document.querySelector('.main');
       const default_error = 'There was an error while loading data from the API.';
