@@ -123,6 +123,7 @@ func main() {
 
 	fmt.Println("Listening on 127.0.0.1:8080")
 	http.HandleFunc("/api/me", me)
+	http.HandleFunc("/api/vote", vote)
 	http.HandleFunc("/", root)
 	http.ListenAndServe("127.0.0.1:8080", nil)
 }

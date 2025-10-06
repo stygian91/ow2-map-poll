@@ -32,14 +32,18 @@ type Map struct {
 const DATE_FORMAT = "2006-01-02 15:04:05"
 
 var (
-	instance            *sql.DB
-	get_user_stmt       *sql.Stmt
-	create_user_stmt    *sql.Stmt
-	get_user_poll_stmt  *sql.Stmt
-	get_rand_maps_stmt  *sql.Stmt
-	create_poll_stmt    *sql.Stmt
-	get_poll_count_stmt *sql.Stmt
+	instance          *sql.DB
+	cached_statements map[string]*sql.Stmt
 )
+
+var statement_queries map[string]string = map[string]string{
+	"get_user":       "select id, hash, created_at from users where hash = ? limit 1",
+	"create_user":    "insert into users(hash, created_at) values (?, ?)",
+	"get_user_poll":  "select id, created_at, user_id, map1_id, map2_id, map3_id, vote from polls where user_id = ? and (vote is null or vote = 0) order by id desc limit 1",
+	"get_rand_maps":  "select id, name from maps order by random() limit 3",
+	"create_poll":    "insert into polls(user_id, map1_id, map2_id, map3_id, created_at, vote) values (?, ?, ?, ?, ?, 0)",
+	"get_poll_count": "select count(*) as cnt from polls where user_id = ? and created_at >= ? and vote is not null and vote != 0",
+}
 
 func Open() error {
 	_db, err := sql.Open("sqlite3", "../db/db.sqlite")
@@ -48,53 +52,35 @@ func Open() error {
 	}
 	instance = _db
 
-	get_user_stmt, err = instance.Prepare("select id, hash, created_at from users where hash = ? limit 1")
-	if err != nil {
-		return err
-	}
+	cached_statements = map[string]*sql.Stmt{}
 
-	create_user_stmt, err = instance.Prepare("insert into users(hash, created_at) values (?, ?)")
-	if err != nil {
-		return err
-	}
+	for k, v := range statement_queries {
+		stmt, stmt_err := instance.Prepare(v)
+		if stmt_err != nil {
+			return stmt_err
+		}
 
-	get_user_poll_stmt, err = instance.Prepare("select id, created_at, user_id, map1_id, map2_id, map3_id, vote from polls where user_id = ? and (vote is null or vote = 0) order by id desc limit 1")
-	if err != nil {
-		return err
-	}
-
-	get_rand_maps_stmt, err = instance.Prepare("select id, name from maps order by random() limit 3")
-	if err != nil {
-		return err
-	}
-
-	create_poll_stmt, err = instance.Prepare("insert into polls(user_id, map1_id, map2_id, map3_id, created_at, vote) values (?, ?, ?, ?, ?, 0)")
-	if err != nil {
-		return err
-	}
-
-	get_poll_count_stmt, err = instance.Prepare("select count(*) as cnt from polls where user_id = ? and created_at >= ? and vote is not null and vote != 0")
-	if err != nil {
-		return err
+		cached_statements[k] = stmt
 	}
 
 	return err
 }
 
 func Close() {
-	get_user_stmt.Close()
-	create_user_stmt.Close()
+	for k := range cached_statements {
+		cached_statements[k].Close()
+	}
 	instance.Close()
 }
 
 func createUser(hash string) error {
-	_, err := create_user_stmt.Exec(hash, time.Now().Format(DATE_FORMAT))
+	_, err := cached_statements["create_user"].Exec(hash, time.Now().Format(DATE_FORMAT))
 	return err
 }
 
 func getUser(hash string) (User, error) {
 	user := User{}
-	get_res := get_user_stmt.QueryRow(hash)
+	get_res := cached_statements["get_user"].QueryRow(hash)
 	scan_err := get_res.Scan(&user.Id, &user.Hash, &user.CreatedAt)
 	return user, scan_err
 }
@@ -119,7 +105,7 @@ func GetOrCreateUser(hash string) (User, error) {
 
 func getPoll(user *User) (Poll, error) {
 	poll := Poll{}
-	get_res := get_user_poll_stmt.QueryRow(user.Id)
+	get_res := cached_statements["get_user_poll"].QueryRow(user.Id)
 	scan_err := get_res.Scan(
 		&poll.Id,
 		&poll.CreatedAt,
@@ -135,7 +121,7 @@ func getPoll(user *User) (Poll, error) {
 func get3RandomMaps() ([3]Map, error) {
 	maps := [3]Map{}
 
-	rows, err := get_rand_maps_stmt.Query()
+	rows, err := cached_statements["get_rand_maps"].Query()
 	if err != nil {
 		return maps, err
 	}
@@ -152,7 +138,7 @@ func get3RandomMaps() ([3]Map, error) {
 }
 
 func createPoll(user *User, maps [3]Map) error {
-	_, err := create_poll_stmt.Exec(user.Id, maps[0].Id, maps[1].Id, maps[2].Id, time.Now().Format(DATE_FORMAT))
+	_, err := cached_statements["create_poll"].Exec(user.Id, maps[0].Id, maps[1].Id, maps[2].Id, time.Now().Format(DATE_FORMAT))
 	return err
 }
 
@@ -180,7 +166,7 @@ func GetOrCreateUserPoll(user *User) (Poll, error) {
 
 func GetPollCountForToday(user *User) (cnt int, err error) {
 	yesterday := time.Now().Add(-time.Hour * 24).Format(DATE_FORMAT)
-	res := get_poll_count_stmt.QueryRow(user.Id, yesterday)
+	res := cached_statements["get_poll_count"].QueryRow(user.Id, yesterday)
 	err = res.Scan(&cnt)
 	return
 }
