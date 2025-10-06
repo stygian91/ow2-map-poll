@@ -72,6 +72,7 @@
       const base_url = 'http://localhost/';
       const $main = document.querySelector('.main');
       const default_error = 'There was an error while loading data from the API.';
+      const limit_error = "You've reached the daily vote limit.";
 
       const maps = [
         {id: 1, name: 'Aatlis', img: 'https://i.imgur.com/sultLaX.png'},
@@ -145,6 +146,24 @@
         });
 
         const responseJson = await response.json();
+
+        switch (response.status) {
+          case 200:
+            window.location.reload();
+          break;
+
+          case 429:
+            show_error(limit_error);
+          break;
+
+          default:
+            let err = default_error;
+            if (response?.message?.length) {
+              err = response.message;
+            }
+            show_error(err);
+          break;
+        }
       }
 
       function show_maps(me) {
@@ -199,7 +218,7 @@
             break;
 
           case 429:
-            show_error("You've reached the daily vote limit.");
+            show_error(limit_error);
             break;
 
           default:
