@@ -31,7 +31,13 @@ type Map struct {
 
 type MapListItem struct {
 	Id    int
+	Mode  string
 	Name  string
+	Count int
+}
+
+type ModeListItem struct {
+	Mode  string
 	Count int
 }
 
@@ -50,7 +56,8 @@ var statement_queries map[string]string = map[string]string{
 	"create_poll":      "insert into polls(user_id, map1_id, map2_id, map3_id, created_at, vote) values (?, ?, ?, ?, ?, 0)",
 	"get_poll_count":   "select count(*) as cnt from polls where user_id = ? and created_at >= ? and vote is not null and vote != 0",
 	"update_poll_vote": "update polls set vote = ? where id = ?",
-	"get_top_maps":     "select m.id, m.name, count(*) as cnt from polls p join maps m on p.vote = m.id where p.vote is not null and p.vote != 0 group by m.id order by cnt desc",
+	"get_top_maps":     "select m.id, m.mode, m.name, count(*) as cnt from polls p join maps m on p.vote = m.id where p.vote is not null and p.vote != 0 group by m.id order by cnt desc",
+	"get_top_modes":    "select mode, count(*) as cnt from polls p join maps m on p.vote = m.id where p.vote is not null and p.vote != 0 group by m.mode order by cnt desc",
 }
 
 func Open() error {
@@ -193,9 +200,25 @@ func GetTopMaps() ([]MapListItem, error) {
 	maps := []MapListItem{}
 	for rows.Next() {
 		m := MapListItem{}
-		rows.Scan(&m.Id, &m.Name, &m.Count)
+		rows.Scan(&m.Id, &m.Mode, &m.Name, &m.Count)
 		maps = append(maps, m)
 	}
 
 	return maps, nil
+}
+
+func GetTopModes() ([]ModeListItem, error) {
+	rows, err := cached_statements["get_top_modes"].Query()
+	if err != nil {
+		return nil, err
+	}
+
+	modes := []ModeListItem{}
+	for rows.Next() {
+		mode := ModeListItem{}
+		rows.Scan(&mode.Mode, &mode.Count)
+		modes = append(modes, mode)
+	}
+
+	return modes, nil
 }

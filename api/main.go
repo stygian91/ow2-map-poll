@@ -175,13 +175,25 @@ func results(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	top_modes, top_modes_err := db.GetTopModes()
+	if top_modes_err != nil {
+		returnError(w, fmt.Errorf("GetTopModes: %w", top_modes_err))
+		return
+	}
+
 	top_maps_json, top_maps_json_err := json.Marshal(top_maps)
 	if top_maps_json_err != nil {
 		returnError(w, fmt.Errorf("marshal: %w", top_maps_json_err))
 		return
 	}
 
-	fmt.Fprintf(w, `{"top_maps": %s}`, string(top_maps_json))
+	top_modes_json, top_modes_json_err := json.Marshal(top_modes)
+	if top_modes_json_err != nil {
+		returnError(w, fmt.Errorf("marshal: %w", top_modes_json_err))
+		return
+	}
+
+	fmt.Fprintf(w, `{"top_maps": %s, "top_modes": %s}`, string(top_maps_json), string(top_modes_json))
 }
 
 func main() {
