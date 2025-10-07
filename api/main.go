@@ -36,6 +36,10 @@ func clientIPSimple(r *http.Request) (string, error) {
 }
 
 func stripPort(ip string) (string, error) {
+	if ! strings.Contains(ip, ":") {
+		return ip, nil
+	}
+
 	host, _, split_err := net.SplitHostPort(ip)
 	return host, split_err
 }
