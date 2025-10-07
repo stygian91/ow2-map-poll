@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stygian91/ow2-map-poll/db"
@@ -21,8 +22,27 @@ func root(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello there")
 }
 
+func clientIPSimple(r *http.Request) (string, error) {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		for _, part := range strings.Split(xff, ",") {
+			ip := strings.TrimSpace(part)
+			if ip != "" {
+				return stripPort(ip)
+			}
+		}
+	}
+
+	return stripPort(r.RemoteAddr)
+}
+
+func stripPort(ip string) (string, error) {
+	host, _, split_err := net.SplitHostPort(ip)
+	return host, split_err
+}
+
 func getClientHash(r *http.Request) (hash string, err error) {
-	host, _, split_err := net.SplitHostPort(r.RemoteAddr)
+	// host, _, split_err := net.SplitHostPort(r.RemoteAddr)
+	host, split_err := clientIPSimple(r)
 
 	if split_err != nil {
 		err = split_err
