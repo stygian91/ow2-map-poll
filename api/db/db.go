@@ -29,6 +29,12 @@ type Map struct {
 	Name string
 }
 
+type MapListItem struct {
+	Id    int
+	Name  string
+	Count int
+}
+
 const DATE_FORMAT = "2006-01-02 15:04:05"
 
 var (
@@ -44,6 +50,7 @@ var statement_queries map[string]string = map[string]string{
 	"create_poll":      "insert into polls(user_id, map1_id, map2_id, map3_id, created_at, vote) values (?, ?, ?, ?, ?, 0)",
 	"get_poll_count":   "select count(*) as cnt from polls where user_id = ? and created_at >= ? and vote is not null and vote != 0",
 	"update_poll_vote": "update polls set vote = ? where id = ?",
+	"get_top_maps":     "select m.id, m.name, count(*) as cnt from polls p join maps m on p.vote = m.id where p.vote is not null and p.vote != 0 group by m.id order by cnt desc",
 }
 
 func Open() error {
@@ -175,4 +182,20 @@ func GetPollCountForToday(user *User) (cnt int, err error) {
 func UpdatePollVote(poll *Poll, vote int) error {
 	_, err := cached_statements["update_poll_vote"].Exec(vote, poll.Id)
 	return err
+}
+
+func GetTopMaps() ([]MapListItem, error) {
+	rows, err := cached_statements["get_top_maps"].Query()
+	if err != nil {
+		return nil, err
+	}
+
+	maps := []MapListItem{}
+	for rows.Next() {
+		m := MapListItem{}
+		rows.Scan(&m.Id, &m.Name, &m.Count)
+		maps = append(maps, m)
+	}
+
+	return maps, nil
 }

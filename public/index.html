@@ -9,7 +9,11 @@
 </head>
 
 <body>
-  <!-- TODO: add top menu -->
+  <nav class="top-menu">
+    <a href="/" class="menu-link active">Vote</a>
+    <a href="/results.html" class="menu-link">Results</a>
+  </nav>
+
   <div class="main">
     <div class="loading">Loading...</div>
   </div>
@@ -18,6 +22,38 @@
     body {
       background-color: #000;
       color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .top-menu {
+      background-color: #111;
+      padding: 15px 20px;
+      border-bottom: 2px solid #333;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .menu-link {
+      color: #fff;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .menu-link:hover,
+    .menu-link.active {
+      background-color: #333;
+      color: #00bfff;
+    }
+
+    .menu-link:focus {
+      outline: 2px solid #00bfff;
+      outline-offset: 2px;
     }
 
     .main {
@@ -179,7 +215,7 @@
             body,
           });
 
-          const responseJson = await response.json();
+          const response_json = await response.json();
 
           switch (response.status) {
             case 200:
@@ -192,8 +228,8 @@
 
             default:
               let err = default_error;
-              if (response?.message?.length) {
-                err = response.message;
+              if (response_json?.message?.length) {
+                err = response_json.message;
               }
               show_error(err);
               break;

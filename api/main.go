@@ -166,6 +166,24 @@ func getQueryInt(query url.Values, key string) int {
 	return int_val
 }
 
+func results(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	top_maps, top_maps_err := db.GetTopMaps()
+	if top_maps_err != nil {
+		returnError(w, fmt.Errorf("GetTopMaps: %w", top_maps_err))
+		return
+	}
+
+	top_maps_json, top_maps_json_err := json.Marshal(top_maps)
+	if top_maps_json_err != nil {
+		returnError(w, fmt.Errorf("marshal: %w", top_maps_json_err))
+		return
+	}
+
+	fmt.Fprintf(w, `{"top_maps": %s}`, string(top_maps_json))
+}
+
 func main() {
 	db_err := db.Open()
 	if db_err != nil {
@@ -178,6 +196,7 @@ func main() {
 	fmt.Println("Listening on 127.0.0.1:8080")
 	http.HandleFunc("/api/me", me)
 	http.HandleFunc("/api/vote", vote)
+	http.HandleFunc("/api/results", results)
 	http.HandleFunc("/", root)
 	http.ListenAndServe("127.0.0.1:8080", nil)
 }
